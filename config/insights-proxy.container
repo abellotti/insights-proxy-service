@@ -5,6 +5,7 @@ Requires=podman.socket
 [Container]
 ContainerName=insights-proxy
 Image=quay.io/abellott/insights-proxy:latest
+PublishPort=3128:3128
 ExposeHostPort=3128
 EnvironmentFile=%h/.config/insights-proxy/env/insights-proxy.env
 Volume=%h/.local/share/insights-proxy/certs:/opt/app-root/certs:z
