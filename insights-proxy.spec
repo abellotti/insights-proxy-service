@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Insights Proxy Serice v1.1
 
 License:        GPLv3
-URL:            https://gihub.com/abellotti/insights-proxy
+URL:            https://gihub.com/abellotti/insights-proxy-service
 Source0:        %{name}-%{version}.tar.gz
 
 BuildArch:      noarch
