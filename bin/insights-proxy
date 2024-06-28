@@ -70,10 +70,10 @@ if [ "${COMMAND}" == "install" ]; then
   mkdir -p "${ENV_USER_PATH}"
   mkdir -p "${SYSTEMD_USER_PATH}"
 
-  cp "${CONFIG_PATH}"/*.network "${SYSTEMD_USER_PATH}"
   for container_file in "${CONFIG_PATH}"/*.container; do
     copy_container "${container_file}" "${SYSTEMD_USER_PATH}"
   done
+
   for env_file in "${ENV_PATH}"/*.env; do
     copy_env "${env_file}" "${ENV_USER_PATH}"
   done
