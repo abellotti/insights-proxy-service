@@ -1,0 +1,17 @@
+[Unit]
+Description=Insights Proxy
+Requires=podman.socket
+
+[Container]
+ContainerName=insights-proxy
+Image=quay.io/abellott/insights-proxy:latest
+ExposeHostPort=3128
+EnvironmentFile=%h/.config/insights-proxy/env/env-insights-proxy.env
+Volume=%h/.local/share/insights-proxy/certs:/opt/app-root/certs:z
+
+[Service]
+Restart=always
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target

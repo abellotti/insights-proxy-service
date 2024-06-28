@@ -1,0 +1,141 @@
+#!/bin/bash
+#
+# Insights-Proxy Service
+#
+export VERBOSE="n"
+INSIGHTS_PROXY_NAME="Insights-Proxy"
+INSIGHTS_PROXY_SERVICE="insights-proxy"
+INSIGHTS_PROXY_PKG_ROOT="${INSIGHTS_PROXY_PKG_ROOT:-/usr/share/${INSIGHTS_PROXY_SERVICE}}"
+
+CONFIG_PATH="${INSIGHTS_PROXY_PKG_ROOT}/config"
+ENV_PATH="${INSIGHTS_PROXY_PKG_ROOT}/env"
+
+INSIGHTS_PROXY_USER_PATH="${HOME}/.local/share/insights-proxy"
+ENV_USER_PATH="${HOME}/.config/insights-proxy/env/"
+SYSTEMD_USER_PATH="${HOME}/.config/containers/systemd/"
+
+if [ "${1}" == "-v" ] || [ "${1}" == "--verbose" ]; then
+  VERBOSE="y"
+  shift
+fi
+
+COMMAND="${1}"
+shift
+
+function debug_msg {
+  if [ "${VERBOSE}" == "y" ]; then
+    echo "$@"
+  fi
+}
+
+if [ "$(id -u)" -eq 0 ]; then
+  echo "${INSIGHTS_PROXY_SERVICE} must not run as root."
+  exit 1
+fi
+
+if [ -z "${XDG_RUNTIME_DIR}" ]; then
+  export XDG_RUNTIME_DIR=/run/user/$UID
+fi
+
+function get_section {
+  config_file="${1}"
+  section_name="${2}"
+  <"${config_file}" sed "0,/^\[${section_name}\]/d" | sed '/^[\b]*$/,$d'
+}
+
+function copy_container {
+  container_config="${1}"
+  target_dir="${2}"
+  container_file=$(basename "${container_config}")
+  debug_msg "Copying ${container_config} ${target_dir} ..."
+  cp "${container_config}" "${target_dir}/${container_file}"
+}
+
+function copy_env {
+  env_config="${1}"
+  target_dir="${2}"
+  env_file=$(basename "${env_config}")
+  env_unit="$(cat "${env_config}")"
+  debug_msg "Copying ${env_config} ${target_dir} ..."
+  echo "${env_unit}" >"${target_dir}/${env_file}"
+}
+
+if [ "${COMMAND}" == "install" ]; then
+
+  mkdir -p "${INSIGHTS_PROXY_USER_PATH}/certs"
+
+  systemctl --user reset-failed
+
+  echo "Installing ${INSIGHTS_PROXY_NAME} configuration files ..."
+  mkdir -p "${ENV_USER_PATH}"
+  mkdir -p "${SYSTEMD_USER_PATH}"
+
+  cp "${CONFIG_PATH}"/*.network "${SYSTEMD_USER_PATH}"
+  for container_file in "${CONFIG_PATH}"/*.container; do
+    copy_container "${container_file}" "${SYSTEMD_USER_PATH}"
+  done
+  for env_file in "${ENV_PATH}"/*.env; do
+    copy_env "${env_file}" "${ENV_USER_PATH}"
+  done
+
+  echo "Generate the ${INSIGHTS_PROXY_NAME} service ..."
+  systemctl --user daemon-reload
+
+  echo "${INSIGHTS_PROXY_NAME} Installed."
+  exit 0
+fi
+
+if [ "${COMMAND}" == "uninstall" ]; then
+
+  echo "Stopping ${INSIGHTS_PROXY_NAME} ..."
+  systemctl --user stop insights-proxy
+
+  echo "Removing ${INSIGHTS_PROXY_NAME} Service ..."
+  rm -f "${XDG_RUNTIME_DIR}"/systemd/generator/insights-proxy-*.service
+  rm -f "${SYSTEMD_USER_PATH}"/insights-proxy*.container
+  rm -f "${ENV_USER_PATH}"/*.env
+
+  systemctl --user daemon-reload
+  systemctl --user reset-failed
+
+  echo "Removing ${INSIGHTS_PROXY_NAME} Data ..."
+  rm -rf "${INSIGHTS_PROXY_USER_PATH}/certs"
+
+  echo "${INSIGHTS_PROXY_NAME} Uninstalled."
+  exit 0
+fi
+
+if [ "${COMMAND}" == "start" ]; then
+  echo "Starting the ${INSIGHTS_PROXY_NAME} service ..."
+  systemctl --user stop ${INSIGHTS_PROXY_SERVICE}.service
+  exit 0
+fi
+
+if [ "${COMMAND}" == "stop" ]; then
+  echo "Stopping the ${INSIGHTS_PROXY_NAME} service ..."
+  systemctl --user stop ${INSIGHTS_PROXY_SERVICE}.service
+  exit 0
+fi
+
+if [ "${COMMAND}" == "restart" ]; then
+  echo "Re-start the ${INSIGHTS_PROXY_NAME} service ..."
+  systemctl --user restart ${INSIGHTS_PROXY_SERVICE}.service
+  exit 0
+fi
+
+if [ "${COMMAND}" == "status" ]; then
+  systemctl --user status ${INSIGHTS_PROXY_SERVICE}.service
+  exit 0
+fi
+
+echo "Usage: ${INSIGHTS_PROXY_SERVICE} [-v | --verbose] <command>"
+echo ""
+echo "Where <command> is one of:"
+echo "  install                  - Install ${INSIGHTS_PROXY_NAME}"
+echo "  uninstall                - Uninstall ${INSIGHTS_PROXY_NAME}"
+echo "  start                    - Start the ${INSIGHTS_PROXY_NAME} Service"
+echo "  stop                     - Stop the ${INSIGHTS_PROXY_NAME} Service"
+echo "  restart                  - Re-start the ${INSIGHTS_PROXY_NAME} Service"
+echo "  status                   - Display Status of the ${INSIGHTS_PROXY_NAME} Service"
+
+exit 1
