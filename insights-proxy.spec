@@ -30,6 +30,7 @@ cp env/*.env %{buildroot}/%{_datadir}/%{name}/env/
 
 %files
 %license LICENSE
+%doc README.md
 %{_bindir}/%{name}
 %{_datadir}/%{name}/config/insights-proxy.container
 %{_datadir}/%{name}/env/insights-proxy.env
