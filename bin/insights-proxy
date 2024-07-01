@@ -37,12 +37,6 @@ if [ -z "${XDG_RUNTIME_DIR}" ]; then
   export XDG_RUNTIME_DIR=/run/user/$UID
 fi
 
-function get_section {
-  config_file="${1}"
-  section_name="${2}"
-  <"${config_file}" sed "0,/^\[${section_name}\]/d" | sed '/^[\b]*$/,$d'
-}
-
 function copy_container {
   container_config="${1}"
   target_dir="${2}"
@@ -111,7 +105,7 @@ fi
 
 if [ "${COMMAND}" == "start" ]; then
   echo "Starting the ${INSIGHTS_PROXY_NAME} service ..."
-  systemctl --user stop ${INSIGHTS_PROXY_SERVICE}.service
+  systemctl --user start ${INSIGHTS_PROXY_SERVICE}.service
   exit 0
 fi
 
