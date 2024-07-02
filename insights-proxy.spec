@@ -27,6 +27,7 @@ mkdir -p %{buildroot}/%{_datadir}/%{name}/config
 cp config/*.container %{buildroot}/%{_datadir}/%{name}/config/
 mkdir -p %{buildroot}/%{_datadir}/%{name}/env
 cp env/*.env %{buildroot}/%{_datadir}/%{name}/env/
+cp env/*.servers %{buildroot}/%{_datadir}/%{name}/env/
 
 %files
 %license LICENSE
@@ -34,6 +35,7 @@ cp env/*.env %{buildroot}/%{_datadir}/%{name}/env/
 %{_bindir}/%{name}
 %{_datadir}/%{name}/config/insights-proxy.container
 %{_datadir}/%{name}/env/insights-proxy.env
+%{_datadir}/%{name}/env/insights-proxy.servers
 
 %changelog
 * Tue Jul 02 2024 Alberto Bellotti <abellott@redhat.com>
