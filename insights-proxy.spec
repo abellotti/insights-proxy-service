@@ -1,7 +1,7 @@
 Name:           insights-proxy
-Version:        1.1
+Version:        1.2
 Release:        1%{?dist}
-Summary:        Insights Proxy Serice v1.1
+Summary:        Insights Proxy Serice v1.2
 
 License:        GPLv3
 URL:            https://gihub.com/abellotti/insights-proxy-service
@@ -12,9 +12,9 @@ BuildArch:      noarch
 Requires:       bash
 
 %description
-This RPM installs the Insights Proxy Service v1.1 on the System.
+This RPM installs the Insights Proxy Service v1.2 on the System.
 The Insights Proxy service controller installs and manages
-the Insights Proxy v1.1 via a systemd quadlet service.
+the Insights Proxy v1.2 via a systemd quadlet service.
 
 %prep
 %autosetup -n %{name}-%{version}
@@ -36,5 +36,10 @@ cp env/*.env %{buildroot}/%{_datadir}/%{name}/env/
 %{_datadir}/%{name}/env/insights-proxy.env
 
 %changelog
+* Tue Jul 02 2024 Alberto Bellotti <abellott@redhat.com>
+- Version 1.2
+- Adding support for
+
 * Fri Jun 28 2024 Alberto Bellotti <abellott@redhat.com>
-1.1
+- Version 1.1
+- Initial prototype
