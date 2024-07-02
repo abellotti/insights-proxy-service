@@ -8,6 +8,7 @@ Image=quay.io/abellott/insights-proxy:latest
 PublishPort=3128:3128
 ExposeHostPort=3128
 EnvironmentFile=%h/.config/insights-proxy/env/insights-proxy.env
+Environment=INSIGHTS_PROXY_SERVERS_FILE=%h/.config/insights-proxy/env/insights-proxy.servers
 Volume=%h/.local/share/insights-proxy/certs:/opt/app-root/certs:z
 
 [Service]

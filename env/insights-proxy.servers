@@ -1,0 +1,11 @@
+# Support RedHat Insights Servers
+console.redhat.com
+cert.console.redhat.com
+cert-api.access.redhat.com
+subscription.rhsm.redhat.com
+sso.redhat.com
+
+# Support RedHat Dnf/Yum Installs
+cdn.redhat.com
+
+# Non RedHat Servers
