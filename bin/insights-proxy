@@ -105,6 +105,7 @@ fi
 
 if [ "${COMMAND}" == "start" ]; then
   echo "Starting the ${INSIGHTS_PROXY_NAME} service ..."
+  systemctl --user daemon-reload
   systemctl --user start ${INSIGHTS_PROXY_SERVICE}.service
   exit 0
 fi
@@ -117,6 +118,7 @@ fi
 
 if [ "${COMMAND}" == "restart" ]; then
   echo "Re-start the ${INSIGHTS_PROXY_NAME} service ..."
+  systemctl --user daemon-reload
   systemctl --user restart ${INSIGHTS_PROXY_SERVICE}.service
   exit 0
 fi
