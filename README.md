@@ -1,6 +1,6 @@
 # Installing Insights-Proxy
 
-## Using the official RPM
+### Using the official RPM
 
 Using the `insights-proxy` service controller, ***all commands*** for installing and interacting with Insights-Proxy should be executed as a *regular non-root* user. 
 
@@ -66,4 +66,28 @@ Where <command> is one of:
   restart                  - Re-start the Insights-Proxy Service
   status                   - Display Status of the Insights-Proxy Service
 ```
+
+### Updating the Insights-Proxy configuration
+
+The configuration of the Insights-Proxy can be updated as follows:
+
+- update the Insights Proxy parameters in `~/.config/insights-proxy/env/insights-provy.env` 
+- you can also update the list of allowed upstream servers in `~/.config/insigihts-proxy/env/insights-proxy.servers`
+
+then restart the service:
+
+```
+$ insights-proxy restart
+```
+
+The configuration parameters include:
+
+- `INSIGHTS_PROXY_DISABLE` to disable the forward proxying, _defaults to 0_
+- `INSIGHTS_PROXY_DEBUG_CONFIG` to log environment variable and Nginx configuration upon startup, _defaults to 0_
+- `INSIGHTS_PROXY_SERVICE_PORT` to define the listening port of the forward proxy, _defaults to 3128_
+- `INSIGHTS_PROXY_DNS_SERVER` to define which DNS server to use for name resolution, _defaults to 8.8.8.8_
+
+
+
+
 
