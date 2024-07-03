@@ -10,6 +10,9 @@ ExposeHostPort=3128
 EnvironmentFile=%h/.config/insights-proxy/env/insights-proxy.env
 EnvironmentFile=%h/.config/insights-proxy/env/insights-proxy-servers.env
 Volume=%h/.local/share/insights-proxy/certs:/opt/app-root/certs:z
+# Since we could write self-generated keys to the shared certs volume
+# Let's make sure we map the nginx user to the host's user.
+UserNS=keep-id:uid=1001,gid=1001
 
 [Service]
 ExecStartPre=/bin/sh -c 'echo INSIGHTS_PROXY_SERVER_NAMES=$(cat %h/.config/insights-proxy/env/insights-proxy.servers | egrep -v "^#|^$|^[ \t]*$" | tr "\n" " ") > %h/.config/insights-proxy/env/insights-proxy-servers.env'
