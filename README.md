@@ -41,6 +41,7 @@ To allow external access to the Insights proxy, run the following commands:
 
 ```sh
 # sudo firewall-cmd --permanent --add-port=3128/tcp 
+# sudo firewall-cmd --permanent --add-port=8443/tcp
 # sudo firewall-cmd --reload
 ```
 
@@ -53,6 +54,12 @@ HTTPS certificate and key in this location before starting the Insights-Proxy:
 - `~/.local/share/insights-proxy/certs/insights-proxy.crt`
 - `~/.local/share/insights-proxy/certs/insights-proxy.key`
 
+The web server part of the insights proxy can be accessed at https://\<server-hosting-the-proxy\>:8443
+
+The download content area for the Insights-Proxy web server is located in the following location:
+
+- `~/.local/share/insights-proxy/download/
+
 The usage of the insights-proxy service controller is included here below:
 
 ```
@@ -60,7 +67,8 @@ Usage: insights-proxy [-v | --verbose] <command>
 
 Where <command> is one of:
   install                  - Install Insights-Proxy
-  uninstall                - Uninstall Insights-Proxy
+  uninstall [-f]           - Uninstall Insights-Proxy
+                             specify -f to force remove the certs and download data
   start                    - Start the Insights-Proxy Service
   stop                     - Stop the Insights-Proxy Service
   restart                  - Re-start the Insights-Proxy Service
@@ -86,8 +94,8 @@ The configuration parameters include:
 - `INSIGHTS_PROXY_DEBUG_CONFIG` to log environment variable and Nginx configuration upon startup, _defaults to 0_
 - `INSIGHTS_PROXY_SERVICE_PORT` to define the listening port of the forward proxy, _defaults to 3128_
 - `INSIGHTS_PROXY_DNS_SERVER` to define which DNS server to use for name resolution, _defaults to 8.8.8.8_
-
-
+- `INSIGHTS_WEB_SERVER_DISABLE` to disable the insights proxy web server, _defaults to 0_
+- `INSIGHTS_WEB_SERVER_PORT` to define the listening port of the insights proxy web server, _defaults to 8443_
 
 
 

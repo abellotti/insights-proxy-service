@@ -57,6 +57,7 @@ function copy_env {
 if [ "${COMMAND}" == "install" ]; then
 
   mkdir -p "${INSIGHTS_PROXY_USER_PATH}/certs"
+  mkdir -p "${INSIGHTS_PROXY_USER_PATH}/download"
 
   systemctl --user reset-failed
 
@@ -92,8 +93,13 @@ if [ "${COMMAND}" == "uninstall" ]; then
   systemctl --user daemon-reload
   systemctl --user reset-failed
 
-  echo "Removing ${INSIGHTS_PROXY_NAME} Data ..."
-  rm -rf "${INSIGHTS_PROXY_USER_PATH}/certs"
+  if [ "${1}" == "-f" ]; then
+    echo "Deleting ${INSIGHTS_PROXY_NAME} Data ..."
+    echo "   Removing ${INSIGHTS_PROXY_USER_PATH}/certs ..."
+    rm -rf "${INSIGHTS_PROXY_USER_PATH}/certs"
+    echo "   Removing ${INSIGHTS_PROXY_USER_PATH}/download ..."
+    rm -rf "${INSIGHTS_PROXY_USER_PATH}/download"
+  fi
 
   echo "${INSIGHTS_PROXY_NAME} Uninstalled."
   exit 0
@@ -128,7 +134,8 @@ echo "Usage: ${INSIGHTS_PROXY_SERVICE} [-v | --verbose] <command>"
 echo ""
 echo "Where <command> is one of:"
 echo "  install                  - Install ${INSIGHTS_PROXY_NAME}"
-echo "  uninstall                - Uninstall ${INSIGHTS_PROXY_NAME}"
+echo "  uninstall [-f]           - Uninstall ${INSIGHTS_PROXY_NAME}"
+echo "                             specify -f to force remove the certs and download data"
 echo "  start                    - Start the ${INSIGHTS_PROXY_NAME} Service"
 echo "  stop                     - Stop the ${INSIGHTS_PROXY_NAME} Service"
 echo "  restart                  - Re-start the ${INSIGHTS_PROXY_NAME} Service"
