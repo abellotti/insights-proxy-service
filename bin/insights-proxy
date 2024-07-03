@@ -57,10 +57,6 @@ function copy_env {
 if [ "${COMMAND}" == "install" ]; then
 
   mkdir -p "${INSIGHTS_PROXY_USER_PATH}/certs"
-  # Insights-Proxy running as 1001 would be writing the
-  # self signed certificates if not there so we need
-  # write permission.
-  chmod 777 "${INSIGHTS_PROXY_USER_PATH}/certs"
 
   systemctl --user reset-failed
 
