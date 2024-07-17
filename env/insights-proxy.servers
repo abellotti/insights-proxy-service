@@ -1,7 +1,14 @@
 # Support RedHat Insights Servers
+api.access.redhat.com
+cert-api.access.redhat.com
+
 console.redhat.com
 cert.console.redhat.com
-cert-api.access.redhat.com
+
+cloud.redhat.com
+cert.cloud.redhat.com
+connect.cloud.redhat.com
+
 subscription.rhsm.redhat.com
 sso.redhat.com
 
