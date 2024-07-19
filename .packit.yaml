@@ -20,13 +20,15 @@ jobs:
 
   - job: copr_build
     trigger: commit
-    project: "insights-proxy-service"
     branch: "^main$"
+    owner: "@abellotti"
+    project: "insights-proxy-service-latest"
     preserve_project: True
     targets: *targets_list
 
   - job: copr_build
     trigger: release
+    owner: "@abellotti"
     project: "insights-proxy-service"
     preserve_project: True
     targets: *targets_list
