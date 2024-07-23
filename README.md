@@ -6,7 +6,6 @@ Using the `insights-proxy` service controller, ***all commands*** for installing
 
 To use the service controller to install and manage the Insights-Proxy service, first install the controller:
 
-
 ```sh
 # sudo dnf install -y insights-proxy
 ```
@@ -58,7 +57,7 @@ The web server part of the insights proxy can be accessed at https://\<server-ho
 
 The download content area for the Insights-Proxy web server is located in the following location:
 
-- `~/.local/share/insights-proxy/download/
+- `~/.local/share/insights-proxy/download/`
 
 The usage of the insights-proxy service controller is included here below:
 
