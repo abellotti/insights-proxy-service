@@ -9,10 +9,14 @@ INSIGHTS_PROXY_PKG_ROOT="${INSIGHTS_PROXY_PKG_ROOT:-/usr/share/${INSIGHTS_PROXY_
 
 CONFIG_PATH="${INSIGHTS_PROXY_PKG_ROOT}/config"
 ENV_PATH="${INSIGHTS_PROXY_PKG_ROOT}/env"
+DOWNLOAD_PATH="${INSIGHTS_PROXY_PKG_ROOT}/download"
 
 INSIGHTS_PROXY_USER_PATH="${HOME}/.local/share/insights-proxy"
 ENV_USER_PATH="${HOME}/.config/insights-proxy/env/"
 SYSTEMD_USER_PATH="${HOME}/.config/containers/systemd/"
+
+CERTS_SHARE_PATH="${INSIGHTS_PROXY_USER_PATH}/certs"
+DOWNLOAD_SHARE_PATH="${INSIGHTS_PROXY_USER_PATH}/download"
 
 if [ "${1}" == "-v" ] || [ "${1}" == "--verbose" ]; then
   VERBOSE="y"
@@ -54,10 +58,27 @@ function copy_env {
   echo "${env_unit}" >"${target_dir}/${env_file}"
 }
 
+function update_download_files {
+  debug_msg "Updating download files in ${DOWNLOAD_SHARE_PATH} ..."
+  mkdir -p "${DOWNLOAD_SHARE_PATH}/bin"
+
+  CONFIG_CLIENT="bin/configure-client.sh"
+  debug_msg "Copying ${CONFIG_CLIENT} ..."
+
+  export INSIGHTS_PROXY_SERVICE_PORT
+  INSIGHTS_PROXY_SERVICE_PORT="$(grep '^INSIGHTS_PROXY_SERVICE_PORT=' "${ENV_USER_PATH}/insights-proxy.env" | cut -f2 -d=)"
+
+  envsubst "\$INSIGHTS_PROXY_SERVICE_PORT}" \
+    < "${DOWNLOAD_PATH}/${CONFIG_CLIENT}.template" \
+    > "${DOWNLOAD_SHARE_PATH}/${CONFIG_CLIENT}"
+
+  chmod 755 "${DOWNLOAD_SHARE_PATH}/${CONFIG_CLIENT}"
+}
+
 if [ "${COMMAND}" == "install" ]; then
 
-  mkdir -p "${INSIGHTS_PROXY_USER_PATH}/certs"
-  mkdir -p "${INSIGHTS_PROXY_USER_PATH}/download"
+  mkdir -p "${CERTS_SHARE_PATH}"
+  mkdir -p "${DOWNLOAD_SHARE_PATH}"
 
   systemctl --user reset-failed
 
@@ -75,6 +96,8 @@ if [ "${COMMAND}" == "install" ]; then
 
   echo "Generate the ${INSIGHTS_PROXY_NAME} service ..."
   systemctl --user daemon-reload
+
+  update_download_files
 
   echo "${INSIGHTS_PROXY_NAME} Installed."
   exit 0
@@ -95,13 +118,20 @@ if [ "${COMMAND}" == "uninstall" ]; then
 
   if [ "${1}" == "-f" ]; then
     echo "Deleting ${INSIGHTS_PROXY_NAME} Data ..."
-    echo "   Removing ${INSIGHTS_PROXY_USER_PATH}/certs ..."
-    rm -rf "${INSIGHTS_PROXY_USER_PATH}/certs"
-    echo "   Removing ${INSIGHTS_PROXY_USER_PATH}/download ..."
-    rm -rf "${INSIGHTS_PROXY_USER_PATH}/download"
+    echo "   Removing ${CERTS_SHARE_PATH} ..."
+    rm -rf "${CERTS_SHARE_PATH}"
+    echo "   Removing ${DOWNLOAD_SHARE_PATH} ..."
+    rm -rf "${DOWNLOAD_SHARE_PATH}"
   fi
 
   echo "${INSIGHTS_PROXY_NAME} Uninstalled."
+  exit 0
+fi
+
+if [ "${COMMAND}" == "update" ]; then
+  echo "Updating download files for the ${INSIGHTS_PROXY_NAME} service ..."
+
+  update_download_files
   exit 0
 fi
 
@@ -109,6 +139,8 @@ if [ "${COMMAND}" == "start" ]; then
   echo "Starting the ${INSIGHTS_PROXY_NAME} service ..."
   systemctl --user daemon-reload
   systemctl --user start ${INSIGHTS_PROXY_SERVICE}.service
+
+  update_download_files
   exit 0
 fi
 
@@ -122,6 +154,8 @@ if [ "${COMMAND}" == "restart" ]; then
   echo "Re-start the ${INSIGHTS_PROXY_NAME} service ..."
   systemctl --user daemon-reload
   systemctl --user restart ${INSIGHTS_PROXY_SERVICE}.service
+
+  update_download_files
   exit 0
 fi
 
@@ -136,6 +170,7 @@ echo "Where <command> is one of:"
 echo "  install                  - Install ${INSIGHTS_PROXY_NAME}"
 echo "  uninstall [-f]           - Uninstall ${INSIGHTS_PROXY_NAME}"
 echo "                             specify -f to force remove the certs and download data"
+echo "  update                   - Update download files"
 echo "  start                    - Start the ${INSIGHTS_PROXY_NAME} Service"
 echo "  stop                     - Stop the ${INSIGHTS_PROXY_NAME} Service"
 echo "  restart                  - Re-start the ${INSIGHTS_PROXY_NAME} Service"
