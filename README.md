@@ -6,7 +6,6 @@ Using the `insights-proxy` service controller, ***all commands*** for installing
 
 To use the service controller to install and manage the Insights-Proxy service, first install the controller:
 
-
 ```sh
 # sudo dnf install -y insights-proxy
 ```
