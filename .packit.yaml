@@ -3,7 +3,7 @@
 
 specfile_path: insights-proxy.spec
 
-upstream_project_url: https://github.com/abellotti/insights-proxy
+upstream_project_url: https://github.com/abellotti/insights-proxy-service
 
 jobs:
   - job: copr_build
@@ -21,14 +21,14 @@ jobs:
   - job: copr_build
     trigger: commit
     branch: "^main$"
-    owner: "@abellotti"
+    owner: "abellott"
     project: "insights-proxy-service-latest"
     preserve_project: True
     targets: *targets_list
 
   - job: copr_build
     trigger: release
-    owner: "@abellotti"
+    owner: "abellott"
     project: "insights-proxy-service"
     preserve_project: True
     targets: *targets_list

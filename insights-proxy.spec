@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Insights Proxy Serice v1.2
 
 License:        GPLv3
-URL:            https://gihub.com/abellotti/insights-proxy-service
+URL:            https://github.com/abellotti/insights-proxy-service
 Source0:        %{name}-%{version}.tar.gz
 
 BuildArch:      noarch
@@ -12,9 +12,9 @@ BuildArch:      noarch
 Requires:       bash
 
 %description
-This RPM installs the Insights Proxy Service v1.2 on the System.
+This RPM installs the Insights Proxy Service on the System.
 The Insights Proxy service controller installs and manages
-the Insights Proxy v1.2 via a systemd quadlet service.
+the Insights Proxy via a systemd quadlet service.
 
 %prep
 %autosetup -n %{name}-%{version}
@@ -28,6 +28,8 @@ cp config/*.container %{buildroot}/%{_datadir}/%{name}/config/
 mkdir -p %{buildroot}/%{_datadir}/%{name}/env
 cp env/*.env %{buildroot}/%{_datadir}/%{name}/env/
 cp env/*.servers %{buildroot}/%{_datadir}/%{name}/env/
+mkdir -p %{buildroot}/%{_datadir}/%{name}/download/bin
+cp download/bin/*.template %{buildroot}/%{_datadir}/%{name}/download/bin/
 
 %files
 %license LICENSE
@@ -36,6 +38,7 @@ cp env/*.servers %{buildroot}/%{_datadir}/%{name}/env/
 %{_datadir}/%{name}/config/insights-proxy.container
 %{_datadir}/%{name}/env/insights-proxy.env
 %{_datadir}/%{name}/env/insights-proxy.servers
+%{_datadir}/%{name}/download/bin/configure-client.sh.template
 
 %changelog
 * Tue Jul 02 2024 Alberto Bellotti <abellott@redhat.com>

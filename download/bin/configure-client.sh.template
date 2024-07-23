@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#
+# Script to configure (or unconfigure) a client for communicating
+# to Insights via the Insights Proxy
+#
+
+export PROXY_HOST="insights-proxy"
+
+# Next line updated via envsubst
+export PROXY_PORT="${INSIGHTS_PROXY_SERVICE_PORT}"
+if [ -z "${PROXY_PORT}" ]; then
+  PROXY_PORT="3128"
+fi
+
+# Dealing with system installed service like rhsm, rhcd, ...
+# must run as root for updating their config and running
+# systemctl.
+if [ ! "$(id -un)" = "root" ]; then
+  echo "Must run configure-client.sh as root"
+  exit 1
+fi
+
+export SUBCMD=""
+if [ -z "${1}" ]; then
+  echo "Usage: configure-client.sh [--configure|--unconfigure]"
+  exit 1
+fi
+SUBCMD="${1}"
+shift
+
+function restart_services {
+  echo "Restarting Insights Services ..."
+  systemctl daemon-reload
+  systemctl restart rhsm.service
+  systemctl restart rhsmcertd.service
+  systemctl restart rhcd
+}
+
+#---------------- Configure ---------------
+if [ "${SUBCMD}" = "--configure" ]; then
+  # Configure the Insights Client and RHC to communicate via the Insights Proxy
+
+  echo "Configuring insights-client/rhsm/rhc/rhcd to proxy to ${PROXY_HOST}:${PROXY_PORT} ..."
+  # Let's configure the proxy_ hostname and port for in rhsm.conf
+  # Honored by insights-client, rhc, subscription-manager
+  cp /etc/rhsm/rhsm.conf /etc/rhsm/rhsm.conf.saved
+  sed -i  -e "s/^proxy_hostname =.*$/proxy_hostname = ${PROXY_HOST}/" \
+          -e "s/^proxy_port =.*$/proxy_port = ${PROXY_PORT}/" rhsm.conf
+
+  # Override the Environment for the RHC Daemon
+  cat - > /etc/systemd/system/rhcd.service.d/override.conf <<!END!
+[Service]
+Environment=HTTP_PROXY=http://${PROXY_HOST}:${PROXY_PORT}
+Environment=HTTPS_PROXY=http://${PROXY_HOST}:${PROXY_PORT}
+!END!
+
+  # Let's update SELinux if we need to communicate with the Insights-Port
+  # On a port other than 443.
+  if [ "$(/usr/sbin/getenforce)" = "Enforcing" ]; then
+    if /usr/sbin/semodule -l | grep -q '^rhcd-proxy$'; then
+      echo "Removing earlier rhcd-proxy SELinux policy"
+      /usr/sbin/semodule -X 300 -r rhcd-proxy
+    fi
+    if [ ! "${PROXY_PORT}" = "443" ]; then
+      echo "Creating the rhcd-proxy SELinux policy for port ${PROXY_PORT} ..."
+      ausearch -c 'rhcd' --raw | audit2allow -M rhcd-proxy
+      /usr/sbin/semodule -X 300 -i rhcd-proxy.pp
+    fi
+  fi
+
+  restart_services
+
+#---------------- Unconfigure ---------------
+elif [ "${SUBCMD}" = "--unconfigure" ]; then
+  # Update the Insights Client and RHC to stop using the Insights Proxy
+
+  echo "Un-Configuring insights-client/rhsm/rhc/rhcd from proxying to Insights ..."
+  # Remove the proxy definition from the rhsm.conf file.
+  cp /etc/rhsm/rhsm.conf /etc/rhsm/rhsm.conf.saved
+  sed -i  -e "s/^proxy_hostname =.*$/proxy_hostname =/" \
+          -e "s/^proxy_port =.*$/proxy_port =-1/" /etc/rhsm/rhsm.conf
+
+  # Remove the override for the RHC Daemon
+  rm -f /etc/systemd/system/rhcd.service.d/override.conf
+
+  restart_services
+else
+  echo "Unknown configure-client.sh option ${SUBCMD} specified."
+  exit 1
+fi
+
