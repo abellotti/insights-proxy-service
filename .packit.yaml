@@ -1,6 +1,7 @@
 # See the documentation for more information:
 # https://packit.dev/docs/configuration/
 
+# the insights-proxy RPM specfile.
 specfile_path: insights-proxy.spec
 
 upstream_project_url: https://github.com/abellotti/insights-proxy-service
