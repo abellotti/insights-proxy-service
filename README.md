@@ -6,7 +6,7 @@ Using the `insights-proxy` service controller, ***all commands*** for installing
 
 To use the service controller to install and manage the Insights-Proxy service, first install the controller:
 
-You need to first enable the latest build COPR build repo. Example here showing enabling the x86_64 repo for RHEL 9:
+You need to first enable the latest build [COPR build repo](https://copr.fedorainfracloud.org/coprs/abellott/insights-proxy-service-latest). Example here showing enabling the x86_64 repo for RHEL 9:
 
 ```sh
 # sudo dnf copr enable abellott/insights-proxy-service-latest rhel-9-x86_64
