@@ -57,20 +57,6 @@ Environment=HTTP_PROXY=http://${PROXY_HOST}:${PROXY_PORT}
 Environment=HTTPS_PROXY=http://${PROXY_HOST}:${PROXY_PORT}
 !END!
 
-  # Let's update SELinux if we need to communicate with the Insights-Port
-  # On a port other than 443.
-  if [ "$(/usr/sbin/getenforce)" = "Enforcing" ]; then
-    if /usr/sbin/semodule -l | grep -q '^rhcd-proxy$'; then
-      echo "Removing earlier rhcd-proxy SELinux policy"
-      /usr/sbin/semodule -X 300 -r rhcd-proxy
-    fi
-    if [ ! "${PROXY_PORT}" = "443" ]; then
-      echo "Creating the rhcd-proxy SELinux policy for port ${PROXY_PORT} ..."
-      ausearch -c 'rhcd' --raw | audit2allow -M rhcd-proxy
-      /usr/sbin/semodule -X 300 -i rhcd-proxy.pp
-    fi
-  fi
-
   restart_services
 
 #---------------- Unconfigure ---------------
