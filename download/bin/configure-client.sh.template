@@ -37,16 +37,18 @@ function restart_services {
   systemctl restart rhcd
 }
 
+export RHSM_CONF="/etc/rhsm/rhsm.conf"
+
 #---------------- Configure ---------------
 if [ "${SUBCMD}" = "--configure" ]; then
   # Configure the Insights Client and RHC to communicate via the Insights Proxy
 
-  echo "Configuring insights-client/rhsm/rhc/rhcd to proxy to ${PROXY_HOST}:${PROXY_PORT} ..."
+  echo "Configuring insights-client and tools proxy to ${PROXY_HOST}:${PROXY_PORT} ..."
   # Let's configure the proxy_ hostname and port for in rhsm.conf
   # Honored by insights-client, rhc, subscription-manager
-  cp /etc/rhsm/rhsm.conf /etc/rhsm/rhsm.conf.saved
+  cp "${RHSM_CONF}" "${RHSM_CONF}.saved"
   sed -i  -e "s/^proxy_hostname =.*$/proxy_hostname = ${PROXY_HOST}/" \
-          -e "s/^proxy_port =.*$/proxy_port = ${PROXY_PORT}/" rhsm.conf
+          -e "s/^proxy_port =.*$/proxy_port = ${PROXY_PORT}/" "${RHSM_CONF}"
 
   # Override the Environment for the RHC Daemon
   cat - > /etc/systemd/system/rhcd.service.d/override.conf <<!END!
@@ -77,9 +79,9 @@ elif [ "${SUBCMD}" = "--unconfigure" ]; then
 
   echo "Un-Configuring insights-client/rhsm/rhc/rhcd from proxying to Insights ..."
   # Remove the proxy definition from the rhsm.conf file.
-  cp /etc/rhsm/rhsm.conf /etc/rhsm/rhsm.conf.saved
+  cp "${RHSM_CONF}" "${RHSM_CONF}.saved"
   sed -i  -e "s/^proxy_hostname =.*$/proxy_hostname =/" \
-          -e "s/^proxy_port =.*$/proxy_port =-1/" /etc/rhsm/rhsm.conf
+          -e "s/^proxy_port =.*$/proxy_port =-1/" "${RHSM_CONF}"
 
   # Remove the override for the RHC Daemon
   rm -f /etc/systemd/system/rhcd.service.d/override.conf
