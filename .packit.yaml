@@ -1,7 +1,6 @@
 # See the documentation for more information:
 # https://packit.dev/docs/configuration/
 
-# the insights-proxy RPM specfile.
 specfile_path: insights-proxy.spec
 
 upstream_project_url: https://github.com/abellotti/insights-proxy-service
@@ -10,15 +9,27 @@ jobs:
   - job: copr_build
     trigger: pull_request
     targets: &targets_list
-      # we officially support rhel-9 downstream.
+      # we officially support rhel-9 downstream
       - rhel-9-x86_64
       - rhel-9-aarch64
+      # and latest fedora releases
+      - fedora-39-x86_64
+      - fedora-39-aarch64
+      - fedora-40-x86_64
+      - fedora-40-aarch64
 
   - job: copr_build
     trigger: commit
     branch: main
     owner: abellott
     project: "insights-proxy-service-latest"
+    preserve_project: True
+    targets: *targets_list
+
+  - job: copr_build
+    trigger: release
+    owner: abellott
+    project: "insights-proxy-service"
     preserve_project: True
     targets: *targets_list
 
