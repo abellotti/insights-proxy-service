@@ -37,7 +37,43 @@ function restart_services {
   systemctl restart rhcd
 }
 
+function install_rhcd_selinux_policy {
+  # If SELinux is not enabled, we're done.
+  if [ ! "$(/usr/sbin/getenforce)" = "Enforcing" ]; then
+    return
+  fi
+
+  # If already there, we're done.
+  if /usr/sbin/semodule -l | grep -q '^rhcd-proxy$'; then
+    return
+  fi
+
+  echo "Creating the rhcd-proxy SELinux policy ..."
+
+  SEL_BUILD="/tmp/selinux-rhcd-proxy"
+  mkdir -p "${SEL_BUILD}"
+  cat - > "${SEL_BUILD}/rhcd-proxy.te" <<!END!
+
+module rhcd-proxy 1.0;
+
+require {
+	type rhcd_t;
+	type squid_port_t;
+	class tcp_socket name_connect;
+}
+
+#============= rhcd_t ==============
+allow rhcd_t squid_port_t:tcp_socket name_connect;
+!END!
+
+  checkmodule -M -m -o "${SEL_BUILD}/rhcd-proxy.mod" "${SEL_BUILD}/rhcd-proxy.te"
+  semodule_package -o "${SEL_BUILD}/rhcd-proxy.pp" -m "${SEL_BUILD}/rhcd-proxy.mod"
+
+  /usr/sbin/semodule -X 300 -i "${SEL_BUILD}/rhcd-proxy.pp"
+}
+
 export RHSM_CONF="/etc/rhsm/rhsm.conf"
+export RHCD_OVERRIDE_DIR="/etc/systemd/system/rhcd.service.d"
 
 #---------------- Configure ---------------
 if [ "${SUBCMD}" = "--configure" ]; then
@@ -51,12 +87,14 @@ if [ "${SUBCMD}" = "--configure" ]; then
           -e "s/^proxy_port =.*$/proxy_port = ${PROXY_PORT}/" "${RHSM_CONF}"
 
   # Override the Environment for the RHC Daemon
-  cat - > /etc/systemd/system/rhcd.service.d/override.conf <<!END!
+  mkdir -p "${RHCD_OVERRIDE_DIR}"
+  cat - > "${RHCD_OVERRIDE_DIR}/override.conf" <<!END!
 [Service]
 Environment=HTTP_PROXY=http://${PROXY_HOST}:${PROXY_PORT}
 Environment=HTTPS_PROXY=http://${PROXY_HOST}:${PROXY_PORT}
 !END!
 
+  install_rhcd_selinux_policy
   restart_services
 
 #---------------- Unconfigure ---------------
@@ -70,7 +108,7 @@ elif [ "${SUBCMD}" = "--unconfigure" ]; then
           -e "s/^proxy_port =.*$/proxy_port =-1/" "${RHSM_CONF}"
 
   # Remove the override for the RHC Daemon
-  rm -f /etc/systemd/system/rhcd.service.d/override.conf
+  rm -f "${RHCD_OVERRIDE_DIR}/override.conf"
 
   restart_services
 else
