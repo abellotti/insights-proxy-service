@@ -23,7 +23,7 @@ fi
 
 export SUBCMD=""
 if [ -z "${1}" ]; then
-  echo "Usage: configure-client.sh [--configure|--unconfigure]"
+  echo "Usage: configure-client.sh [--configure [--proxy-host hostname] [--proxy-port port] | --unconfigure]"
   exit 1
 fi
 SUBCMD="${1}"
@@ -78,6 +78,20 @@ export RHCD_OVERRIDE_DIR="/etc/systemd/system/rhcd.service.d"
 #---------------- Configure ---------------
 if [ "${SUBCMD}" = "--configure" ]; then
   # Configure the Insights Client and RHC to communicate via the Insights Proxy
+
+  if [ "${1}" == "--proxy-host" ]; then
+    shift
+    [ -z "${1}" ] && echo "Must specify a hostname with --proxy-host" && exit 1
+    PROXY_HOST="${1}"
+    shift
+  fi
+
+  if [ "${1}" == "--proxy-port" ]; then
+    shift
+    [ -z "${1}" ] && echo "Must specify a port with --proxy-port" && exit 1
+    PROXY_PORT="${1}"
+    shift
+  fi
 
   echo "Configuring insights-client and tools proxy to ${PROXY_HOST}:${PROXY_PORT} ..."
   # Let's configure the proxy_ hostname and port for in rhsm.conf
