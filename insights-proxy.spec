@@ -23,6 +23,7 @@ the Insights Proxy via a systemd quadlet service.
 mkdir -p %{buildroot}/%{_bindir}
 mkdir -p %{buildroot}/%{_datadir}/%{name}/bin
 cp bin/%{name} %{buildroot}/%{_bindir}/%{name}
+cp bin/insights-proxy-configure %{buildroot}/%{_datadir}/%{name}/bin/insights-proxy-configure
 mkdir -p %{buildroot}/%{_datadir}/%{name}/config
 cp config/*.container %{buildroot}/%{_datadir}/%{name}/config/
 mkdir -p %{buildroot}/%{_datadir}/%{name}/env
@@ -35,6 +36,7 @@ cp download/bin/*.template %{buildroot}/%{_datadir}/%{name}/download/bin/
 %license LICENSE
 %doc README.md
 %{_bindir}/%{name}
+%{_datadir}/%{name}/bin/insights-proxy-configure
 %{_datadir}/%{name}/config/insights-proxy.container
 %{_datadir}/%{name}/env/insights-proxy.env
 %{_datadir}/%{name}/env/insights-proxy.servers
@@ -43,7 +45,7 @@ cp download/bin/*.template %{buildroot}/%{_datadir}/%{name}/download/bin/
 %changelog
 * Tue Jul 02 2024 Alberto Bellotti <abellott@redhat.com>
 - Version 1.2
-- Adding support for
+- Additional enhancements
 
 * Fri Jun 28 2024 Alberto Bellotti <abellott@redhat.com>
 - Version 1.1
