@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Insights Proxy Configuration.
+#
+# Customize/Update the service environment before starting up the NGINX Proxy Server.
+#
+
+export PROXY_ENVFILE="insights-proxy.env"
+export SERVERS_ENVFILE="insights-proxy-servers.env"
+
+[ $# -ne 1 ] && echo "Usage: ${0} service-environment-directory" >&2 && exit 1
+
+export ENV_DIR="${1}"
+shift
+
+[ ! -d "${ENV_DIR}" ] && echo "Insights Proxy environment directory ${ENV_DIR} does not exist" >&2 && exit 1
+
+cd "${ENV_DIR}"
+
+#
+# Let's define the INSIGHTS_PROXY_SERVER_NAMES environment based on the servers list
+#
+
+echo -n "INSIGHTS_PROXY_SERVER_NAMES=" > "${SERVERS_ENVFILE}"
+cat insights-proxy.servers | egrep -v "^#|^$|^[ \t]*$" | tr "\n" " " >> "${SERVERS_ENVFILE}"
+echo >> "${SERVERS_ENVFILE}"
+
+#
+# Let's define the resolver to use for the NGINX Server.
+#
+
+export SYSTEM_DNS_RESOLVER=$(awk '/^nameserver/{print $2; exit;}' /etc/resolv.conf)
+export DNS_RESOLVER="${SYSTEM_DNS_RESOLVER:=1.1.1.1}"
+sed -i "s/^INSIGHTS_PROXY_DNS_SERVER=.*/INSIGHTS_PROXY_DNS_SERVER=${DNS_RESOLVER}/" "${PROXY_ENVFILE}"
+

@@ -18,7 +18,7 @@ Volume=%h/.local/share/insights-proxy/download:/opt/app-root/download:z
 UserNS=keep-id:uid=1001,gid=1001
 
 [Service]
-ExecStartPre=/bin/sh -c 'cd %h/.config/insights-proxy/env; echo -n "INSIGHTS_PROXY_SERVER_NAMES=" > "insights-proxy-servers.env"; cat insights-proxy.servers | egrep -v "^#|^$|^[ \t]*$" | tr "\n" " " >> "insights-proxy-servers.env"; echo >> "insights-proxy-servers.env"'
+ExecStartPre=/bin/sh -c '/usr/share/insights-proxy/bin/insights-proxy-configure %h/.config/insights-proxy/env'
 Restart=always
 TimeoutStartSec=600
 
